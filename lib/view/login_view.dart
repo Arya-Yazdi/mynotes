@@ -34,59 +34,73 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Create input field for user to enter their email.
-        TextField(
-          // Send user's input to the text controller.
-          controller: _email,
-          // Use "email" keyboard when user taps on input.
-          keyboardType: TextInputType.emailAddress,
-          // Don't autocorect email input.
-          autocorrect: false,
-          // Use "email" as placeholder text.
-          decoration: const InputDecoration(hintText: "email"),
-        ),
-
-        // Create input field for user to enter their password.
-        TextField(
-          // Send user's input to the text controller.
-          controller: _password,
-          // Hide password when typed.
-          obscureText: true,
-          // Don't suggest or autocorect password input.
-          enableSuggestions: false,
-          autocorrect: false,
-          // Use "password" as placeholder text.
-          decoration: const InputDecoration(hintText: "password"),
-        ),
-
-        // Create a button.
-        TextButton(
-          // When the button is pressed ...
-          onPressed: () async {
-            // Get email from text controller.
-            final email = _email.text;
-            // Get password from text controller.
-            final password = _password.text;
-            try {
-              // Log user in.
-              final credential = await FirebaseAuth.instance
-                  .signInWithEmailAndPassword(email: email, password: password);
-              print('USER SUCCESSFULLY LOGGED IN');
-              print(credential);
-            } on FirebaseAuthException catch (e) {
-              if (e.code == 'user-not-found') {
-                print('USER NOT FOUND');
-              } else if (e.code == 'wrong-password') {
-                print('WRONG PASSWORD');
+    return Scaffold(
+      appBar: AppBar(title: const Text("Login"),),
+      body: Column(
+        children: [
+          // Create input field for user to enter their email.
+          TextField(
+            // Send user's input to the text controller.
+            controller: _email,
+            // Use "email" keyboard when user taps on input.
+            keyboardType: TextInputType.emailAddress,
+            // Don't autocorect email input.
+            autocorrect: false,
+            // Use "email" as placeholder text.
+            decoration: const InputDecoration(hintText: "email"),
+          ),
+    
+          // Create input field for user to enter their password.
+          TextField(
+            // Send user's input to the text controller.
+            controller: _password,
+            // Hide password when typed.
+            obscureText: true,
+            // Don't suggest or autocorect password input.
+            enableSuggestions: false,
+            autocorrect: false,
+            // Use "password" as placeholder text.
+            decoration: const InputDecoration(hintText: "password"),
+          ),
+    
+          // Create a button.
+          TextButton(
+            // When the button is pressed ...
+            onPressed: () async {
+              // Get email from text controller.
+              final email = _email.text;
+              // Get password from text controller.
+              final password = _password.text;
+              try {
+                // Log user in.
+                final credential = await FirebaseAuth.instance
+                    .signInWithEmailAndPassword(email: email, password: password);
+                print('USER SUCCESSFULLY LOGGED IN');
+                print(credential);
+              } on FirebaseAuthException catch (e) {
+                if (e.code == 'user-not-found') {
+                  print('USER NOT FOUND');
+                } else if (e.code == 'wrong-password') {
+                  print('WRONG PASSWORD');
+                }
               }
-            }
-          },
-          // Write "register" on button.
-          child: const Text("Login"),
-        ),
-      ],
+            },
+            // Write "Login" on button.
+            child: const Text("Login"),
+          ),
+          // Button which redirects users to register page.
+          TextButton(
+            onPressed: () {
+              // Remove all previous routes and push the "register" route onto the screen.
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                "/register/",
+                (route) => false,
+              );
+            },
+            child: const Text("Not Registered Yet? Register Now"),
+          )
+        ],
+      ),
     );
   }
 }
