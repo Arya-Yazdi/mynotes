@@ -35,7 +35,9 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login"),),
+      appBar: AppBar(
+        title: const Text("Login"),
+      ),
       body: Column(
         children: [
           // Create input field for user to enter their email.
@@ -49,7 +51,7 @@ class _LoginViewState extends State<LoginView> {
             // Use "email" as placeholder text.
             decoration: const InputDecoration(hintText: "email"),
           ),
-    
+
           // Create input field for user to enter their password.
           TextField(
             // Send user's input to the text controller.
@@ -62,7 +64,7 @@ class _LoginViewState extends State<LoginView> {
             // Use "password" as placeholder text.
             decoration: const InputDecoration(hintText: "password"),
           ),
-    
+
           // Create a button.
           TextButton(
             // When the button is pressed ...
@@ -74,7 +76,8 @@ class _LoginViewState extends State<LoginView> {
               try {
                 // Log user in.
                 final credential = await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(email: email, password: password);
+                    .signInWithEmailAndPassword(
+                        email: email, password: password);
                 print('USER SUCCESSFULLY LOGGED IN');
                 print(credential);
               } on FirebaseAuthException catch (e) {
