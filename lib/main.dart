@@ -117,7 +117,7 @@ class _NotesViewState extends State<NotesView> {
   }
 }
 
-// Cretae "showLogOutDialog" Function to handle Logout Confirmation.
+// Create "showLogOutDialog" Function to handle Logout Confirmation.
 Future<bool> showLogOutDialog(BuildContext context) {
   // Show the alert Dialog (but the alert dialog needs to be created first).
   return showDialog<bool>(
