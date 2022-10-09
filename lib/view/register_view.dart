@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as devtools show log;
-
 import 'package:mynotes/constants/routes.dart';
+import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -78,18 +77,30 @@ class _RegisterViewState extends State<RegisterView> {
               final password = _password.text;
               try {
                 // Registed user using firebase.
-                final userCredential = await FirebaseAuth.instance
-                    .createUserWithEmailAndPassword(
-                        email: email, password: password);
-                devtools.log(userCredential.toString());
+                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                  email: email,
+                  password: password,
+                );
+                // Get user from FirebaceAuth.
+                final user = FirebaseAuth.instance.currentUser;
+                // Send verification email to the user's email if user is not null.
+                await user?.sendEmailVerification();
+
+                Navigator.of(context).pushNamed(verifyEmailRoute);
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'weak-password') {
-                  devtools.log('WEAK PASSWORD');
+                  await showErrorDialog(context, "Weak Password.");
                 } else if (e.code == 'email-already-in-use') {
-                  devtools.log('EMAIL IS ALREADY IN USE');
+                  await showErrorDialog(context, "Email is already in use.");
                 } else if (e.code == 'invalid-email') {
-                  devtools.log('INVALID EMAIL');
+                  await showErrorDialog(context, "Invalid Email Address.");
+                } else {
+                  // Catch any other FirebaseAuthException (that is not specified above).
+                  await showErrorDialog(context, e.toString());
                 }
+              } catch (e) {
+                // Catch any exception that may occur.
+                await showErrorDialog(context, e.toString());
               }
             },
             // Write "register" on button.

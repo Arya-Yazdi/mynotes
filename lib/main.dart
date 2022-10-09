@@ -19,7 +19,8 @@ void main() {
       routes: {
         loginRoute: (context) => const LoginView(),
         registerRoute: (context) => const RegisterView(),
-        notesRoute: (context) => const NotesView()
+        notesRoute: (context) => const NotesView(),
+        verifyEmailRoute: (context) => const VerifyEmailView()
       },
     ),
   );
@@ -91,7 +92,7 @@ class _NotesViewState extends State<NotesView> {
                     // Remove all routes taken by user and take then to login route.
                     Navigator.of(context).pushNamedAndRemoveUntil(
                       loginRoute,
-                      (_) => false,
+                      (route) => false,
                     );
                   }
               }
