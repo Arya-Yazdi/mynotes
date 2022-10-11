@@ -8,10 +8,11 @@ import 'package:flutter/foundation.dart';
 // Constructor which stores wether the user's email is verified or not.
 class AuthUser {
   final bool isEmailVerified;
-  const AuthUser(this.isEmailVerified);
+  const AuthUser({required this.isEmailVerified});
 
   // Create a factory constructor.
   // Get user from FirebaseAuth and call our own "AuthUser" constructor to create a copy of that user.
   // Get user's email verification state and set the "isEmailVerified" variable for the user's instance.
-  factory AuthUser.fromFirebase(User user) => AuthUser(user.emailVerified);
+  factory AuthUser.fromFirebase(User user) =>
+      AuthUser(isEmailVerified: user.emailVerified);
 }
