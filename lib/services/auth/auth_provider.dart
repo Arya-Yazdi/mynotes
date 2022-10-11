@@ -1,10 +1,12 @@
-//// Creates a base for using different Auth providers (such as google, apple, facebook, github)
+//// (2) Creates a base for using different Auth providers (such as google, apple, facebook, github)
 //// You need to implement the actual handling of each auth provider seperately.
 
 import 'package:mynotes/services/auth/auth_user.dart';
 
 // You cannot create an instance of an abract class (it is only used for inheritance).
 abstract class AuthProvider {
+  Future<void> initialize();
+
   // (Defining a getter) Get the current user no matter the auth provider (can be from any auth provider).
   // ? is used as AuthUser might return null if there is no user.
   AuthUser? get currentUser;

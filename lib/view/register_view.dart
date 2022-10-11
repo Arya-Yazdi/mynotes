@@ -1,6 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
+import 'package:mynotes/services/auth/auth_exceptions.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
@@ -13,6 +14,7 @@ class RegisterView extends StatefulWidget {
 class _RegisterViewState extends State<RegisterView> {
   // Create text controller to store user's inputted email.
   late final TextEditingController _email;
+
   // Create text controller to store user's inputted password.
   late final TextEditingController _password;
 
@@ -46,10 +48,13 @@ class _RegisterViewState extends State<RegisterView> {
           TextField(
             // Send user's input to the text controller.
             controller: _email,
+
             // Use "email" keyboard when user taps on input.
             keyboardType: TextInputType.emailAddress,
+
             // Don't autocorect email input.
             autocorrect: false,
+
             // Use "email" as placeholder text.
             decoration: const InputDecoration(hintText: "email"),
           ),
@@ -58,11 +63,14 @@ class _RegisterViewState extends State<RegisterView> {
           TextField(
             // Send user's input to the text controller.
             controller: _password,
+
             // Hide password when typed.
             obscureText: true,
+
             // Don't suggest or autocorect password input.
             enableSuggestions: false,
             autocorrect: false,
+
             // Use "password" as placeholder text.
             decoration: const InputDecoration(hintText: "password"),
           ),
@@ -73,39 +81,36 @@ class _RegisterViewState extends State<RegisterView> {
             onPressed: () async {
               // Get email from text controller.
               final email = _email.text;
+
               // Get password from text controller.
               final password = _password.text;
+
               try {
                 // Registed user using firebase.
-                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                await AuthService.firebase().createUser(
                   email: email,
                   password: password,
                 );
-                // Get user from FirebaceAuth.
-                final user = FirebaseAuth.instance.currentUser;
-                // Send verification email to the user's email if user is not null.
-                await user?.sendEmailVerification();
 
+                // Send verification email to the user's email
+                await AuthService.firebase().sendEmailVerification();
+
+                // Reroute user to "verifyEmail" view.
                 Navigator.of(context).pushNamed(verifyEmailRoute);
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'weak-password') {
-                  await showErrorDialog(context, "Weak Password.");
-                } else if (e.code == 'email-already-in-use') {
-                  await showErrorDialog(context, "Email is already in use.");
-                } else if (e.code == 'invalid-email') {
-                  await showErrorDialog(context, "Invalid Email Address.");
-                } else {
-                  // Catch any other FirebaseAuthException (that is not specified above).
-                  await showErrorDialog(context, e.toString());
-                }
-              } catch (e) {
-                // Catch any exception that may occur.
-                await showErrorDialog(context, e.toString());
+              } on WeakPasswordAuthException {
+                await showErrorDialog(context, "Weak Password.");
+              } on EmailAlreadyInUseAuthException {
+                await showErrorDialog(context, "Email is already in use.");
+              } on InvalidEmailAuthException {
+                await showErrorDialog(context, "Invalid Email Address.");
+              } on GenericAuthException {
+                await showErrorDialog(context, "Failed to Register");
               }
             },
             // Write "register" on button.
             child: const Text("Register"),
           ),
+
           // Button which loads "login screen" to user if they already have an account.
           TextButton(
               onPressed: () {

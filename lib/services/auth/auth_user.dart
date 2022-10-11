@@ -1,4 +1,4 @@
-//// Creating class to abstract user away (so that main UI doesn't have
+//// (1) Creating class to abstract user away (so that main UI doesn't have
 //// to directly interact with FirebaseAuth for security reasons)
 
 import 'package:firebase_auth/firebase_auth.dart' show User;
