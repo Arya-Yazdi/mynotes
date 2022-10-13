@@ -1,4 +1,5 @@
 //// Handles everything related to storing/editing etc. user notes.
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mynotes/services/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
@@ -9,6 +10,47 @@ import 'package:path/path.dart' show join;
 class NoteService {
   // Create a variable called "_db" of type Database.
   Database? _db;
+
+  // Declare a variable which stores a list of notes and call it "_notes". (This will be used for caching)
+  List<DatabaseNote> _notes = [];
+
+  // Declare a stream controller. <List<DatabaseNote>> is type of data that the stream contains.
+  // .broadcast() allows you to listen to the stream more than once.
+  final _notesStreamController =
+      StreamController<List<DatabaseNote>>.broadcast();
+
+  // Function which gets/creates user in our databased based on their email which
+  // they used to registed/login into our app using firebase.
+  // This function will be used so we can show only the notes associated to the logged in user.
+  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    try {
+      // Get user from database based on their email.
+      final user = await getUser(email: email);
+
+      return user;
+    } on CouldNotFindUserException {
+      // Create a user if there is no user with the associated email in our database.
+      final createdUser = await createUser(email: email);
+      return createdUser;
+    } catch (e) {
+      // "rethrow" shows traceback of stack. Allows you to debug later on if
+      // an exception arises which you have not handled.
+      rethrow;
+    }
+  }
+
+  // Declare function which can read and chache the notes to "_notes"
+  // and the "notesStreamController" Stream controller
+  Future<void> _cacheNotes() async {
+    // Get all notes from the database.
+    final allNotes = await getAllNotes();
+
+    // Store/Cache all notes into the _notes cache.
+    _notes = allNotes.toList();
+
+    // Store/Cache changes to _notes at _notesStreamController.
+    _notesStreamController.add(_notes);
+  }
 
   // Function which checks to see if databsae is open or not(throws an exception).
   Database _getDatabaseOrThrow() {
@@ -42,14 +84,18 @@ class NoteService {
       // Assign opened "db" to our local database instance.
       _db = db;
 
-      // Execute the "createUserTable" SQL command in our app's database.
+      // Execute the "createUserTable" (USER TABLE) SQL command in our app's database.
       await db.execute(createUserTable);
 
-      // Execute the "createNoteTable" SQL command in our app's database.
+      // Execute the "createNoteTable" (NOTE TABLE) SQL command in our app's database.
       await db.execute(createNoteTable);
     } on MissingPlatformDirectoryException {
+      // Throw exception if unable to get document directory.
       throw UnableToGetDocumentsDirectoryException();
     }
+
+    // Cache all user notes from database;
+    await _cacheNotes();
   }
 
   // Function which closes the database.
@@ -159,13 +205,19 @@ class NoteService {
       isSyncedWithCloudColumn: 1,
     });
 
-    // Return DatabaseNote instance of the users note.
+    // store DatabaseNote instance of the users note ina variable called "notes".
     final note = DatabaseNote(
       id: noteId,
       userId: owner.id,
       text: text,
       isSyncedWithCloud: true,
     );
+
+    // Cache newly added note to "_notes".
+    _notes.add(note);
+
+    // Cache newly updated "_notes" list to "_notesStreamController" Stream Controller.
+    _notesStreamController.add(_notes);
 
     return note;
   }
@@ -185,6 +237,13 @@ class NoteService {
     // Throw Exception if note could not be deleted.
     if (deleteCount == 0) {
       throw CouldNotDeleteNoteException();
+    } else {
+      // Remove deleted note from local cache.
+      // Code reads as: Remove note from _notes where note.id is equal to id.
+      _notes.removeWhere((note) => note.id == id);
+
+      // Update Stream Controller
+      _notesStreamController.add(_notes);
     }
   }
 
@@ -194,10 +253,16 @@ class NoteService {
     final db = _getDatabaseOrThrow();
 
     // Delete all notes inside the "note" table.
-    final deleteCount = await db.delete(noteTable);
+    final numberOfDeletions = await db.delete(noteTable);
+
+    // Update _notes cache and set it to an empty list as all notes would have been deleted.
+    _notes = [];
+
+    // Update Stream Controller.
+    _notesStreamController.add(_notes);
 
     // Return number of rows/notes deleted.
-    return deleteCount;
+    return numberOfDeletions;
   }
 
   // Function which fetches a specific note based on its id.
@@ -217,7 +282,20 @@ class NoteService {
     if (notes.isEmpty) {
       throw CouldNotFindNoteException();
     } else {
-      return DatabaseNote.fromRow(notes.first);
+      // Get note from database.
+      final note = DatabaseNote.fromRow(notes.first);
+
+      // Update note in "_notes" cache to ensure note is not outdated.
+      // Remove specified note from the cache.
+      _notes.removeWhere((note) => note.id == id);
+
+      // Add updated note into the cache.
+      _notes.add(note);
+
+      // Update Stream Controller.
+      _notesStreamController.add(_notes);
+
+      return note;
     }
   }
 
@@ -243,9 +321,10 @@ class NoteService {
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 
-    // Get note from database (used as getNote() function checks if note exists or not.)
+    // Get note from database to ensure it exists (getNote() function checks if note exists or not.)
     await getNote(id: note.id);
 
+    // Update text of note stored in database.
     final updatesCount = await db.update(
       noteTable,
       {
@@ -261,8 +340,20 @@ class NoteService {
       // Throw exception if note could not be updated.
       throw CouldNotUpdateNoteException();
     } else {
-      // Return updated note.
-      return await getNote(id: note.id);
+      // Get updated note.
+      final updatedNote = await getNote(id: note.id);
+
+      // Update note in "_notes" cache to ensure note is not outdated.
+      // Remove specified note from the cache.
+      _notes.removeWhere((note) => note.id == updatedNote.id);
+
+      // Add updated note into the cache.
+      _notes.add(updatedNote);
+
+      // Update Stream Controller.
+      _notesStreamController.add(_notes);
+
+      return updatedNote;
     }
   }
 }
