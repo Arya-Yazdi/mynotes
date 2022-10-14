@@ -173,7 +173,7 @@ class MockAuthProvider implements AuthProvider {
     if (password == "foobar") throw WrongPasswordAuthException();
 
     // Create an instance of AuthUser.
-    const user = AuthUser(isEmailVerified: false);
+    const user = AuthUser(isEmailVerified: false, email: 'foo@bar.com');
 
     // Set _user variable to user we just created.
     _user = user;
@@ -208,7 +208,7 @@ class MockAuthProvider implements AuthProvider {
 
     // isEmailVerified for "user" is read only therefore we need to fake create another user and set
     // the new users "isEmailVerified" to true and pretent that the "newUser" is actually our main "user".
-    const newUser = AuthUser(isEmailVerified: true);
+    const newUser = AuthUser(isEmailVerified: true, email: 'foo@bar.com');
 
     // Set our actual/current user to the newUser.
     _user = newUser;
