@@ -1,4 +1,4 @@
-//// Handles everything related to storing/editing etc. user notes.
+//// Handles everything related to storing/editing etc. user's notes.
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mynotes/services/crud/crud_exceptions.dart';
@@ -18,6 +18,17 @@ class NoteService {
   // .broadcast() allows you to listen to the stream more than once.
   final _notesStreamController =
       StreamController<List<DatabaseNote>>.broadcast();
+
+  // Getter function which gets all notes form the "_notesStreamController"
+  // Create a stream of a list of DatabaseNotes.
+  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+
+  // Make "NoteService" a singleton so that only one instance of it can be created in the entire application.
+  // In this case the single instance is going to be called "_shared".  The factory allows us to
+  // access this single instance ("_shared") of our NoteService by simply calling NoteService()
+  static final NoteService _shared = NoteService._sharedInstance();
+  NoteService._sharedInstance();
+  factory NoteService() => _shared;
 
   // Function which gets/creates user in our databased based on their email which
   // they used to registed/login into our app using firebase.
@@ -59,6 +70,18 @@ class NoteService {
       throw DatabaseIsNotOpenException();
     } else {
       return db;
+    }
+  }
+
+  // Function which ensures database is open.
+  Future<void> _ensureDbIsOpen() async {
+    try {
+      // Call our open() function to open the database.
+      await open();
+    }
+    // Don't do anything if "DatabaseAlreadyOpenException" is thrown.
+    on DatabaseAlreadyOpenException {
+      // Do nothing (no code).
     }
   }
 
@@ -117,6 +140,9 @@ class NoteService {
 
   // Function which deletes user from databases given their email.
   Future<void> deleteUser({required String email}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get database.
     final db = _getDatabaseOrThrow();
 
@@ -134,6 +160,9 @@ class NoteService {
 
   // Function which adds user to the database.
   Future<DatabaseUser> createUser({required String email}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get the database.
     final db = _getDatabaseOrThrow();
 
@@ -160,6 +189,9 @@ class NoteService {
 
   // Function which gets the User from the database using their email.
   Future<DatabaseUser> getUser({required String email}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get the current app's database.
     final db = _getDatabaseOrThrow();
 
@@ -183,6 +215,9 @@ class NoteService {
 
   // Function which allows user to create/store notes.
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get the current app's database
     final db = _getDatabaseOrThrow();
 
@@ -224,6 +259,9 @@ class NoteService {
 
   // Function which allows user to delete their note.
   Future<void> deleteNote({required int id}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 
@@ -249,6 +287,9 @@ class NoteService {
 
   // Function which deleted ALL notes from the database (not really sure why you need this function...)
   Future<int> deleteAllNotes({required int id}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 
@@ -267,6 +308,9 @@ class NoteService {
 
   // Function which fetches a specific note based on its id.
   Future<DatabaseNote> getNote({required int id}) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 
@@ -301,6 +345,9 @@ class NoteService {
 
   // Function which fetches all notes. Returns a list of "DatabaseNote".
   Future<Iterable<DatabaseNote>> getAllNotes() async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 
@@ -318,6 +365,9 @@ class NoteService {
     // Text which the user is going to change the note text to.
     required String text,
   }) async {
+    // Ensure database is already opened.
+    await _ensureDbIsOpen();
+
     // Get current app's database.
     final db = _getDatabaseOrThrow();
 

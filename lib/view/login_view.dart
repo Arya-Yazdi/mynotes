@@ -17,6 +17,7 @@ class _LoginViewState extends State<LoginView> {
   // Create text controller to store user's inputted password.
   late final TextEditingController _password;
 
+  // initState() is always called once at the very beginning.
   @override
   void initState() {
     // Store user's inputted email.
@@ -27,6 +28,7 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
   }
 
+  // dispose() is always called once at the very end.
   @override
   void dispose() {
     // Dispose user's inputted login information after authentication has been completed.
