@@ -53,6 +53,7 @@ class _NotesViewState extends State<NotesView> {
                   Navigator.of(context).pushNamed(newNoteRoute);
                 },
                 icon: const Icon(Icons.add)),
+
             // Display dropdown menu button option (three dots etc.)
             PopupMenuButton<MenuAction>(
               // When the ITEM in the menu button dropdown is tapped on...
@@ -111,7 +112,10 @@ class _NotesViewState extends State<NotesView> {
                   builder: (context, snapshot) {
                     switch (snapshot.connectionState) {
                       // When waiting for stream to return all of user's notes...
+                      // Or when stream has returned all user's notes...
                       case ConnectionState.waiting:
+                      case ConnectionState.active:
+                        // Return this.
                         return const Text("Waiting for all Notes to load...");
                       // In any other case...
                       default:
