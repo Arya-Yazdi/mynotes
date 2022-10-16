@@ -14,21 +14,28 @@ class NoteService {
   // Declare a variable which stores a list of notes and call it "_notes". (This will be used for caching)
   List<DatabaseNote> _notes = [];
 
-  // Declare a stream controller. <List<DatabaseNote>> is type of data that the stream contains.
-  // .broadcast() allows you to listen to the stream more than once.
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
-
-  // Getter function which gets all notes form the "_notesStreamController"
-  // Create a stream of a list of DatabaseNotes.
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
-
+  // Allows us to listen to the stream more than once.
+  NoteService._sharedInstance() {
+    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
+      onListen: () {
+        _notesStreamController.sink.add(_notes);
+      },
+    );
+  }
+  
   // Make "NoteService" a singleton so that only one instance of it can be created in the entire application.
   // In this case the single instance is going to be called "_shared".  The factory allows us to
   // access this single instance ("_shared") of our NoteService by simply calling NoteService()
   static final NoteService _shared = NoteService._sharedInstance();
-  NoteService._sharedInstance();
   factory NoteService() => _shared;
+
+  // Declare a stream controller. <List<DatabaseNote>> is type of data that the stream contains.
+  // .broadcast() allows you to listen to the stream more than once.
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
+
+  // Getter function which gets all notes form the "_notesStreamController"
+  // Create a stream of a list of DatabaseNotes.
+  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
 
   // Function which gets/creates user in our databased based on their email which
   // they used to registed/login into our app using firebase.

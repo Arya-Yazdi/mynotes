@@ -31,15 +31,6 @@ class _NotesViewState extends State<NotesView> {
     super.initState();
   }
 
-  // dispose() is always called once at the very end.
-  @override
-  void dispose() {
-    // Close the database.
-    _noteService.close();
-
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,8 +106,33 @@ class _NotesViewState extends State<NotesView> {
                       // Or when stream has returned all user's notes...
                       case ConnectionState.waiting:
                       case ConnectionState.active:
-                        // Return this.
-                        return const Text("Waiting for all Notes to load...");
+                        // If the "stream: _noteService.allNotes" contains data and is not empty...
+                        if (snapshot.hasData) {
+                          // Get all of its data (get the list of notes / all notes)
+                          final allNotes = snapshot.data as List<DatabaseNote>;
+
+                          // Display a list of notes.
+                          return ListView.builder(
+                            itemCount: allNotes.length,
+                            // For each item in our ListView...
+                            itemBuilder: (context, index) {
+                              // Get current note from list as ListView iterates over list on notes.
+                              final note = allNotes[index];
+                              // Display the current note...
+                              return ListTile(
+                                title: Text(
+                                  note.text,
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+
                       // In any other case...
                       default:
                         return const CircularProgressIndicator();
