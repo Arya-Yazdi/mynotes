@@ -1,9 +1,11 @@
+// Main view of the application where users can see the notes they have created.
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
-import 'package:mynotes/view/notes/new_note_view.dart';
-import '../../enums/menu_action.dart';
+import 'package:mynotes/utilities/dialog/logout_dialog.dart';
+import 'package:mynotes/enums/menu_action.dart';
+import 'package:mynotes/view/notes/notes_list_view.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -110,23 +112,11 @@ class _NotesViewState extends State<NotesView> {
                         if (snapshot.hasData) {
                           // Get all of its data (get the list of notes / all notes)
                           final allNotes = snapshot.data as List<DatabaseNote>;
-
-                          // Display a list of notes.
-                          return ListView.builder(
-                            itemCount: allNotes.length,
-                            // For each item in our ListView...
-                            itemBuilder: (context, index) {
-                              // Get current note from list as ListView iterates over list on notes.
-                              final note = allNotes[index];
-                              // Display the current note...
-                              return ListTile(
-                                title: Text(
-                                  note.text,
-                                  maxLines: 1,
-                                  softWrap: true,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
+                          // List all notes and allow users to delete them.
+                          return NotesListView(
+                            notes: allNotes,
+                            onDeleteNote: (note) async {
+                              await _noteService.deleteNote(id: note.id);
                             },
                           );
                         } else {
@@ -148,42 +138,43 @@ class _NotesViewState extends State<NotesView> {
   }
 }
 
-// Create "showLogOutDialog" Function to handle Logout Confirmation.
-Future<bool> showLogOutDialog(BuildContext context) {
-  // Show the alert Dialog (but the alert dialog needs to be created first).
-  return showDialog<bool>(
-    context: context,
-    builder: (context) {
-      // Create the Alert Dialog
-      return AlertDialog(
-        // Set its title.
-        title: const Text("Sign Out"),
-        // Set its message
-        content: const Text("Are you sure you want to Sign Out?"),
-        // Create actions which the user can take...
-        actions: [
-          // Create a "Cancel" button.
-          TextButton(
-              // When Cancel button is pressed...
-              onPressed: () {
-                // Return the value of false (to ShowDialog)
-                Navigator.of(context).pop(false);
-              },
-              // Write "Cancel" on button.
-              child: const Text("Cancel")),
-          // Create a "Log out" button.
-          TextButton(
-              // When "log out" button is pressed...
-              onPressed: () {
-                // Return the value of true (to ShowDialog)
-                Navigator.of(context).pop(true);
-              },
-              // Write "Log Out" on button.
-              child: const Text("Log Out")),
-        ],
-      );
-    },
-    // If the user clicks on one of the action buttons, return its value,
-    //else (if the user taps outside/the back button), return false (AKA cancel the Sign Out operation.)
-  ).then((value) => value ?? false);
-}
+// TO BE REMOVED.
+// // Create "showLogOutDialog" Function to handle Logout Confirmation.
+// Future<bool> showLogOutDialog(BuildContext context) {
+//   // Show the alert Dialog (but the alert dialog needs to be created first).
+//   return showDialog<bool>(
+//     context: context,
+//     builder: (context) {
+//       // Create the Alert Dialog
+//       return AlertDialog(
+//         // Set its title.
+//         title: const Text("Sign Out"),
+//         // Set its message
+//         content: const Text("Are you sure you want to Sign Out?"),
+//         // Create actions which the user can take...
+//         actions: [
+//           // Create a "Cancel" button.
+//           TextButton(
+//               // When Cancel button is pressed...
+//               onPressed: () {
+//                 // Return the value of false (to ShowDialog)
+//                 Navigator.of(context).pop(false);
+//               },
+//               // Write "Cancel" on button.
+//               child: const Text("Cancel")),
+//           // Create a "Log out" button.
+//           TextButton(
+//               // When "log out" button is pressed...
+//               onPressed: () {
+//                 // Return the value of true (to ShowDialog)
+//                 Navigator.of(context).pop(true);
+//               },
+//               // Write "Log Out" on button.
+//               child: const Text("Log Out")),
+//         ],
+//       );
+//     },
+//     // If the user clicks on one of the action buttons, return its value,
+//     //else (if the user taps outside/the back button), return false (AKA cancel the Sign Out operation.)
+//   ).then((value) => value ?? false);
+// }

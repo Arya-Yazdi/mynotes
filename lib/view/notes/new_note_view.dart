@@ -1,3 +1,4 @@
+// View shown when users click the "+" icon from notes_view to create and type their new note.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
