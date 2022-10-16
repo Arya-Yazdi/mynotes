@@ -4,15 +4,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
+import 'package:mynotes/utilities/generics/get_arguments.dart';
 
-class NewNoteView extends StatefulWidget {
-  const NewNoteView({super.key});
+class CreateUpdateNoteView extends StatefulWidget {
+  const CreateUpdateNoteView({super.key});
 
   @override
-  State<NewNoteView> createState() => _NewNoteViewState();
+  State<CreateUpdateNoteView> createState() => _CreateUpdateNoteViewState();
 }
 
-class _NewNoteViewState extends State<NewNoteView> {
+class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   // Create a variable called "_note" which is of type DatabaseNote.
   DatabaseNote? _note;
 
@@ -57,9 +58,21 @@ class _NewNoteViewState extends State<NewNoteView> {
     _textController.addListener(_textControllerListener);
   }
 
-  // Function which creates an empty note (when user's press the "+" icon)
-  // so user can type their text into it.
-  Future<DatabaseNote> createNewNote() async {
+  // Function which creates an empty note (when user's press the "+" icon) so user can type their text into it.
+  // Function is also called if the user wants to update their note.
+  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+    // Get argument if Widget passed an argument. (The note text when user taps on it to update/edit)
+    final widgetNote = context.getArgument<DatabaseNote>();
+
+    // If user tapped on a note in order to edit it...
+    if (widgetNote != null) {
+      _note = widgetNote;
+      // Set "_textController" text as text of note to be edited.
+      _textController.text = widgetNote.text;
+
+      return widgetNote;
+    }
+
     final existingNote = _note;
     // This if statement ensures the empty note is created only once.
     if (existingNote != null) {
@@ -75,8 +88,12 @@ class _NewNoteViewState extends State<NewNoteView> {
     // Get current user stored in our database.
     final owner = await _noteService.getUser(email: email);
 
-    // Create new note and return it.
-    return await _noteService.createNote(owner: owner);
+    // Create new note.
+    final newNote = await _noteService.createNote(owner: owner);
+
+    _note = newNote;
+
+    return newNote;
   }
 
   // Function which deleted user note if they dispose the page and they have written no text.
@@ -128,13 +145,10 @@ class _NewNoteViewState extends State<NewNoteView> {
         title: const Text("New Note"),
       ),
       body: FutureBuilder(
-        future: createNewNote(),
+        future: createOrGetExistingNote(context),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              // Get data returned by createNewNote() and assign it to _note.
-              _note = snapshot.data as DatabaseNote;
-
               // Start Listening to changes in the text (as user starts typing)
               _setupTextControllerListener();
 

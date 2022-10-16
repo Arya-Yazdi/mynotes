@@ -43,7 +43,7 @@ class _NotesViewState extends State<NotesView> {
             // Display a "+" plus icon. Allows user's to add new note.
             IconButton(
                 onPressed: () {
-                  Navigator.of(context).pushNamed(newNoteRoute);
+                  Navigator.of(context).pushNamed(createOrUpdateNewNoteRoute);
                 },
                 icon: const Icon(Icons.add)),
 
@@ -118,6 +118,13 @@ class _NotesViewState extends State<NotesView> {
                             onDeleteNote: (note) async {
                               await _noteService.deleteNote(id: note.id);
                             },
+                            // Allow user to edit note.
+                            onTap: (note) {
+                              Navigator.of(context).pushNamed(
+                                createOrUpdateNewNoteRoute,
+                                arguments: note,
+                              );
+                            },
                           );
                         } else {
                           return const CircularProgressIndicator();
@@ -137,44 +144,3 @@ class _NotesViewState extends State<NotesView> {
         ));
   }
 }
-
-// TO BE REMOVED.
-// // Create "showLogOutDialog" Function to handle Logout Confirmation.
-// Future<bool> showLogOutDialog(BuildContext context) {
-//   // Show the alert Dialog (but the alert dialog needs to be created first).
-//   return showDialog<bool>(
-//     context: context,
-//     builder: (context) {
-//       // Create the Alert Dialog
-//       return AlertDialog(
-//         // Set its title.
-//         title: const Text("Sign Out"),
-//         // Set its message
-//         content: const Text("Are you sure you want to Sign Out?"),
-//         // Create actions which the user can take...
-//         actions: [
-//           // Create a "Cancel" button.
-//           TextButton(
-//               // When Cancel button is pressed...
-//               onPressed: () {
-//                 // Return the value of false (to ShowDialog)
-//                 Navigator.of(context).pop(false);
-//               },
-//               // Write "Cancel" on button.
-//               child: const Text("Cancel")),
-//           // Create a "Log out" button.
-//           TextButton(
-//               // When "log out" button is pressed...
-//               onPressed: () {
-//                 // Return the value of true (to ShowDialog)
-//                 Navigator.of(context).pop(true);
-//               },
-//               // Write "Log Out" on button.
-//               child: const Text("Log Out")),
-//         ],
-//       );
-//     },
-//     // If the user clicks on one of the action buttons, return its value,
-//     //else (if the user taps outside/the back button), return false (AKA cancel the Sign Out operation.)
-//   ).then((value) => value ?? false);
-// }

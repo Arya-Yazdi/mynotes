@@ -5,19 +5,23 @@ import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/utilities/dialog/delete_dialog.dart';
 
 // Function which takes in a note as a parameter.
-typedef DeleteNoteCallBack = void Function(DatabaseNote note);
+typedef NoteCallBack = void Function(DatabaseNote note);
 
 class NotesListView extends StatelessWidget {
   // Declare variable "notes" which stores all of users notes.
   final List<DatabaseNote> notes;
 
-  // Initiate "DeleteNoteCallBack" function and name it "onDeleteNote"
-  final DeleteNoteCallBack onDeleteNote;
+  // Initiate "NoteCallBack" function and name it "onDeleteNote"
+  final NoteCallBack onDeleteNote;
+
+  // Initiate NoteCallBack function and name it "onTap"
+  final NoteCallBack onTap;
 
   const NotesListView({
     super.key,
     required this.notes,
     required this.onDeleteNote,
+    required this.onTap,
   });
 
   @override
@@ -31,6 +35,10 @@ class NotesListView extends StatelessWidget {
         final note = notes[index];
         // Display the current note...
         return ListTile(
+          onTap: () {
+            // Pass note to
+            onTap(note);
+          },
           title: Text(
             note.text,
             maxLines: 1,
