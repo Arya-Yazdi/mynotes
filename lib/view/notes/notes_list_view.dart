@@ -32,7 +32,7 @@ class NotesListView extends StatelessWidget {
       // For each item in our ListView...
       itemBuilder: (context, index) {
         // Get current note from list as ListView iterates over list on notes.
-        final note = notes[index];
+        var note = notes[index];
         // Display the current note...
         return ListTile(
           onTap: () {

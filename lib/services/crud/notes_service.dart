@@ -1,6 +1,7 @@
 //// Handles everything related to storing/editing etc. user's notes.
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:mynotes/extentions/list/filter.dart';
 import 'package:mynotes/services/crud/crud_exceptions.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,6 +15,8 @@ class NoteService {
   // Declare a variable which stores a list of notes and call it "_notes". (This will be used for caching)
   List<DatabaseNote> _notes = [];
 
+  DatabaseUser? _user;
+
   // Allows us to listen to the stream more than once.
   NoteService._sharedInstance() {
     _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
@@ -22,7 +25,7 @@ class NoteService {
       },
     );
   }
-  
+
   // Make "NoteService" a singleton so that only one instance of it can be created in the entire application.
   // In this case the single instance is going to be called "_shared".  The factory allows us to
   // access this single instance ("_shared") of our NoteService by simply calling NoteService()
@@ -34,21 +37,43 @@ class NoteService {
   late final StreamController<List<DatabaseNote>> _notesStreamController;
 
   // Getter function which gets all notes form the "_notesStreamController"
-  // Create a stream of a list of DatabaseNotes.
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
+  Stream<List<DatabaseNote>> get allNotes =>
+      _notesStreamController.stream.filter((note) {
+        // Get the current user.
+        final currentUser = _user;
+
+        // If there is a user...
+        if (currentUser != null) {
+          // Return a boolean to the ".filter" function.
+          return note.userId == currentUser.id;
+        } else {
+          // Throw exception if there is no user set.
+          throw UserShouldBeSetBeforeReadingAllNotesException();
+        }
+      });
 
   // Function which gets/creates user in our databased based on their email which
   // they used to registed/login into our app using firebase.
   // This function will be used so we can show only the notes associated to the logged in user.
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     try {
       // Get user from database based on their email.
       final user = await getUser(email: email);
+
+      if (setAsCurrentUser) {
+        _user = user;
+      }
 
       return user;
     } on CouldNotFindUserException {
       // Create a user if there is no user with the associated email in our database.
       final createdUser = await createUser(email: email);
+      if (setAsCurrentUser) {
+        _user = createdUser;
+      }
       return createdUser;
     } catch (e) {
       // "rethrow" shows traceback of stack. Allows you to debug later on if
@@ -365,7 +390,7 @@ class NoteService {
     return notes.map((notesRow) => DatabaseNote.fromRow(notes.first));
   }
 
-  // Function which allows user to update their notes. (derail from tutorial)
+  // Function which allows user to update their notes.
   Future<DatabaseNote> updateNote({
     // To grab existing note (so the note can be edited)
     required DatabaseNote note,
@@ -388,7 +413,6 @@ class NoteService {
         textColumn: text,
         isSyncedWithCloudColumn: 0,
       },
-      // Tutorial doesnt include code where and whereArg but I think its needed.
       where: 'id = ?',
       whereArgs: [note.id],
     );
