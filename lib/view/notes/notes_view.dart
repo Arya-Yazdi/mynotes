@@ -16,7 +16,7 @@ class NotesView extends StatefulWidget {
 
 class _NotesViewState extends State<NotesView> {
   // Getter Function which gets user's email from firebase.
-  String get userEmail => AuthService.firebase().currentUser!.email!;
+  String get userEmail => AuthService.firebase().currentUser!.email;
 
   // Create a variable of type NoteService and name the variable  "_noteService".
   late final NoteService _noteService;
