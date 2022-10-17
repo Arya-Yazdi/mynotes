@@ -1,15 +1,15 @@
 // View which lists all of users created notes and allows users to delete them.
 
 import 'package:flutter/material.dart';
-import 'package:mynotes/services/crud/notes_service.dart';
+import 'package:mynotes/services/cloud/cloud_note.dart';
 import 'package:mynotes/utilities/dialog/delete_dialog.dart';
 
 // Function which takes in a note as a parameter.
-typedef NoteCallBack = void Function(DatabaseNote note);
+typedef NoteCallBack = void Function(CloudNote note);
 
 class NotesListView extends StatelessWidget {
   // Declare variable "notes" which stores all of users notes.
-  final List<DatabaseNote> notes;
+  final Iterable<CloudNote> notes;
 
   // Initiate "NoteCallBack" function and name it "onDeleteNote"
   final NoteCallBack onDeleteNote;
@@ -32,7 +32,7 @@ class NotesListView extends StatelessWidget {
       // For each item in our ListView...
       itemBuilder: (context, index) {
         // Get current note from list as ListView iterates over list on notes.
-        var note = notes[index];
+        var note = notes.elementAt(index);
         // Display the current note...
         return ListTile(
           onTap: () {

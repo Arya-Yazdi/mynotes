@@ -10,13 +10,23 @@ class FirebaseCloudStorage {
   final notes = FirebaseFirestore.instance.collection("notes");
 
   // Define Function to create a note in our "notes" collection from Firestore given user's id.
-  void createNewNote({required String ownerUserId}) async {
-    await notes.add({
+  Future<CloudNote> createNewNote({required String ownerUserId}) async {
+    // Add a new note to our "notes" collection.
+    final document = await notes.add({
       // Set the ownerUserIdFieldName as user's id.
       ownerUserIdFieldName: ownerUserId,
       // Set note text.
       textFieldName: "",
     });
+
+    // Get the note created.
+    final fetchedNote = await document.get();
+
+    return CloudNote(
+      documentId: fetchedNote.id,
+      ownerUserId: ownerUserId,
+      text: '',
+    );
   }
 
   // Function which gets user's note from Firestore given the user's id.
@@ -31,17 +41,10 @@ class FirebaseCloudStorage {
           )
           // Get those documents which pass the "where" filter.
           .get()
-          // Then map each document(each note) to a "CloudNote" and fill in appropriate details.
+          // Then map each document(each note) to a "CloudNote" and fill in appropriate fields
+          // with content taken from the doc(the note).
           .then(
-            (value) => value.docs.map(
-              (doc) {
-                return CloudNote(
-                  documentId: doc.id,
-                  ownerUserId: doc.data()[ownerUserIdFieldName] as String,
-                  text: doc.data()[textFieldName] as String,
-                );
-              },
-            ),
+            (value) => value.docs.map((doc) => CloudNote.fromSnapShot(doc)),
           );
     } catch (e) {
       throw CouldNotGetAllNotesException();

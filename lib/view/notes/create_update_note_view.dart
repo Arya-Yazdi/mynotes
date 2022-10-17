@@ -1,10 +1,11 @@
 // View shown when users click the "+" icon from notes_view to create and type their new note.
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
-import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/utilities/generics/get_arguments.dart';
+import 'package:mynotes/services/cloud/cloud_note.dart';
+import 'package:mynotes/services/cloud/cloud_storage_exceptions.dart';
+import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
 
 class CreateUpdateNoteView extends StatefulWidget {
   const CreateUpdateNoteView({super.key});
@@ -15,10 +16,10 @@ class CreateUpdateNoteView extends StatefulWidget {
 
 class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   // Create a variable called "_note" which is of type DatabaseNote.
-  DatabaseNote? _note;
+  CloudNote? _note;
 
   // Create a variable of type NoteService and name the variable  "_noteService".
-  late final NoteService _noteService;
+  late final FirebaseCloudStorage _noteService;
 
   // Declare controller which keeps track of user's text as they are typing their note.
   late final TextEditingController _textController;
@@ -27,7 +28,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   @override
   void initState() {
     // Create an instance of NoteService.
-    _noteService = NoteService();
+    _noteService = FirebaseCloudStorage();
 
     // Create an intance of TextEditingController.
     _textController = TextEditingController();
@@ -35,7 +36,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     super.initState();
   }
 
-  // Function which listens to changes in the note and updated the note in our database.
+  // Function which listens to changes in the note and updated the note.
   void _textControllerListener() async {
     // Get created note
     final note = _note;
@@ -48,8 +49,11 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     // Get most recent text from our _textController.
     final text = _textController.text;
 
-    // Update note with most recent text in our database.
-    await _noteService.updateNote(note: note, text: text);
+    // Update note with most recent text.
+    await _noteService.updateNote(
+      documentId: note.documentId,
+      text: text,
+    );
   }
 
   // Function which ???
@@ -60,9 +64,9 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
   // Function which creates an empty note (when user's press the "+" icon) so user can type their text into it.
   // Function is also called if the user wants to update their note.
-  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
     // Get argument if Widget passed an argument. (The note text when user taps on it to update/edit)
-    final widgetNote = context.getArgument<DatabaseNote>();
+    final widgetNote = context.getArgument<CloudNote>();
 
     // If user tapped on a note in order to edit it...
     if (widgetNote != null) {
@@ -79,17 +83,14 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
       // Return that note.
       return existingNote;
     }
-    // Get current user from firebase.
+    // Get current user from firebaseAuth.
     final currentUser = AuthService.firebase().currentUser!;
 
-    // Get current user's email
-    final email = currentUser.email;
-
-    // Get current user stored in our database.
-    final owner = await _noteService.getUser(email: email);
+    // Get current user's id.
+    final userId = currentUser.id;
 
     // Create new note.
-    final newNote = await _noteService.createNote(owner: owner);
+    final newNote = await _noteService.createNewNote(ownerUserId: userId);
 
     _note = newNote;
 
@@ -104,7 +105,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
     // If there was a note created however there were no changes made to it...
     if (_textController.text.isEmpty && note != null) {
       // Delete that note.
-      _noteService.deleteNote(id: note.id);
+      _noteService.deleteNote(documentId: note.documentId);
     }
   }
 
@@ -118,8 +119,11 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
 
     // If a note is created and it's text is not empty.
     if (note != null && text.isNotEmpty) {
-      // Update the note in our database
-      await _noteService.updateNote(note: note, text: text);
+      // Update the note.
+      await _noteService.updateNote(
+        documentId: note.documentId,
+        text: text,
+      );
     }
   }
 

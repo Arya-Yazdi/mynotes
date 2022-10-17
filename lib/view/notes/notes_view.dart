@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/cloud/cloud_note.dart';
+import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/utilities/dialog/logout_dialog.dart';
 import 'package:mynotes/enums/menu_action.dart';
@@ -15,20 +17,17 @@ class NotesView extends StatefulWidget {
 }
 
 class _NotesViewState extends State<NotesView> {
-  // Getter Function which gets user's email from firebase.
-  String get userEmail => AuthService.firebase().currentUser!.email;
+  // Create a variable of type FirebaseCloudStorage and name the variable  "_noteService".
+  late final FirebaseCloudStorage _noteService;
 
-  // Create a variable of type NoteService and name the variable  "_noteService".
-  late final NoteService _noteService;
+  // Getter Function which gets user's id from firebase.
+  String get userId => AuthService.firebase().currentUser!.id;
 
   // initState() is always called once at the very beginning.
   @override
   void initState() {
-    // Create an instance of our NoteService.
-    _noteService = NoteService();
-
-    // Open/Initialize database.
-    _noteService.open();
+    // Create an instance of our FirebaseCloudStorage.
+    _noteService = FirebaseCloudStorage();
 
     super.initState();
   }
@@ -89,54 +88,39 @@ class _NotesViewState extends State<NotesView> {
         ),
         // Body of the notes view.
         // Cretae a FutureBuilder.
-        body: FutureBuilder(
-          // Get the current user from the database based on their email
-          // or create them in the database if they don't yet exist.
-          future: _noteService.getOrCreateUser(email: userEmail),
+        body: StreamBuilder(
+          // Assign stream to our "allNotes" stream located in our "_noteService".
+          stream: _noteService.allNotes(ownerUserId: userId),
           builder: (context, snapshot) {
-            // "snapshot.connectionState" shows Current state of connection
-            // to the asynchronous Function (in this case our getOrCreateUser() Future.)
             switch (snapshot.connectionState) {
-              // If asynchronous Function was successfully run...
-              case ConnectionState.done:
-                return StreamBuilder(
-                  // Assign stream to our "allNotes" stream located in our "_noteService".
-                  stream: _noteService.allNotes,
-                  builder: (context, snapshot) {
-                    switch (snapshot.connectionState) {
-                      // When waiting for stream to return all of user's notes...
-                      // Or when stream has returned all user's notes...
-                      case ConnectionState.waiting:
-                      case ConnectionState.active:
-                        // If the "stream: _noteService.allNotes" contains data and is not empty...
-                        if (snapshot.hasData) {
-                          // Get all of its data (get the list of notes / all notes)
-                          final allNotes = snapshot.data as List<DatabaseNote>;
-                          // List all notes and allow users to delete them.
-                          return NotesListView(
-                            notes: allNotes,
-                            onDeleteNote: (note) async {
-                              await _noteService.deleteNote(id: note.id);
-                            },
-                            // Allow user to edit note.
-                            onTap: (note) {
-                              Navigator.of(context).pushNamed(
-                                createOrUpdateNewNoteRoute,
-                                arguments: note,
-                              );
-                            },
-                          );
-                        } else {
-                          return const CircularProgressIndicator();
-                        }
+              // When waiting for stream to return all of user's notes...
+              // Or when stream has returned all user's notes...
+              case ConnectionState.waiting:
+              case ConnectionState.active:
+                // If the "stream: _noteService.allNotes" contains data and is not empty...
+                if (snapshot.hasData) {
+                  // Get all of its data (get the list of notes / all notes)
+                  final allNotes = snapshot.data as Iterable<CloudNote>;
+                  // List all notes and allow users to delete them.
+                  return NotesListView(
+                    notes: allNotes,
+                    onDeleteNote: (note) async {
+                      await _noteService.deleteNote(
+                          documentId: note.documentId);
+                    },
+                    // Allow user to edit note.
+                    onTap: (note) {
+                      Navigator.of(context).pushNamed(
+                        createOrUpdateNewNoteRoute,
+                        arguments: note,
+                      );
+                    },
+                  );
+                } else {
+                  return const CircularProgressIndicator();
+                }
 
-                      // In any other case...
-                      default:
-                        return const CircularProgressIndicator();
-                    }
-                  },
-                );
-              // When asynchronous Function is being processed...
+              // In any other case...
               default:
                 return const CircularProgressIndicator();
             }
