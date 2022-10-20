@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/auth/bloc/auth_block.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
 
 class LoginView extends StatefulWidget {
@@ -79,29 +82,33 @@ class _LoginViewState extends State<LoginView> {
               // Get password from text controller.
               final password = _password.text;
               try {
-                // Log user in.
-                await AuthService.firebase().logIn(
-                  email: email,
-                  password: password,
-                );
-                // Get current user from FirebaseAuth
-                final user = AuthService.firebase().currentUser;
-                // If user's email if verified...
-                if (user?.isEmailVerified ?? false) {
-                  // Send user to main page of application.
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    notesRoute,
-                    (route) => false,
-                  );
-                }
-                // If user is not verified...
-                else {
-                  // Send user to "verify email" page.
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    verifyEmailRoute,
-                    (route) => false,
-                  );
-                }
+                // Get Get ahold of our "AuthBloc" and call AuthEventLogIn().
+                context.read<AuthBloc>().add(AuthEventLogIn(email, password));
+
+                // CODE BEFORE USING BLOC:
+                // // Log user in.
+                // await AuthService.firebase().logIn(
+                //   email: email,
+                //   password: password,
+                // );
+                // // Get current user from FirebaseAuth
+                // final user = AuthService.firebase().currentUser;
+                // // If user's email if verified...
+                // if (user?.isEmailVerified ?? false) {
+                //   // Send user to main page of application.
+                //   Navigator.of(context).pushNamedAndRemoveUntil(
+                //     notesRoute,
+                //     (route) => false,
+                //   );
+                // }
+                // // If user is not verified...
+                // else {
+                //   // Send user to "verify email" page.
+                //   Navigator.of(context).pushNamedAndRemoveUntil(
+                //     verifyEmailRoute,
+                //     (route) => false,
+                //   );
+                // }
               } on UserNotFoundAuthException {
                 await showErrorDialog(context, "User not found!");
               } on WrongPasswordAuthException {

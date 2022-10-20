@@ -1,10 +1,12 @@
 // Main view of the application where users can see the notes they have created.
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/auth/bloc/auth_block.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/cloud/cloud_note.dart';
 import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
-import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/utilities/dialog/logout_dialog.dart';
 import 'package:mynotes/enums/menu_action.dart';
 import 'package:mynotes/view/notes/notes_list_view.dart';
@@ -58,13 +60,9 @@ class _NotesViewState extends State<NotesView> {
                     // If shouldLogOut is true...
                     if (shouldLogOut) {
                       // Log user out.
-                      await AuthService.firebase().logOut();
-
-                      // Remove all routes taken by user and take then to login view..
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        loginRoute,
-                        (route) => false,
-                      );
+                      context.read<AuthBloc>().add(
+                            const AuthEventLogOut(),
+                          );
                     }
                 }
               },
