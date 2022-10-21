@@ -20,8 +20,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final user = provider.currentUser;
       // If user is not logged in...
       if (user == null) {
-        // Set state to "Logged Out".
-        emit(const AuthStateLoggedOut());
+        // Set state to "Logged Out" and pass it no exceptions.
+        emit(const AuthStateLoggedOut(null));
       }
       // If user is logged in but has not verified their email...
       else if (!user.isEmailVerified) {
@@ -37,14 +37,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     // LOG IN EVENT: When the user wants to log in.
     on<AuthEventLogIn>(((event, emit) async {
-      // Set state to "Loading" as we will need to make an API call.
-      emit(const AuthStateLoading());
       // Get user's email.
       final email = event.email;
-
       // Get user's password.
       final password = event.password;
-
       // Try to log user in using our Auth Provider.
       try {
         // Get user if they could successfully log in.
@@ -52,8 +48,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Set state to "Logged In".
         emit(AuthStateLoggedIn(user));
       } on Exception catch (e) {
-        // Set state to "Log Out Failure".
-        emit(AuthStateLogInFailure(e));
+        // Set state to "Log Out" and pass in the exception.
+        emit(AuthStateLoggedOut(e));
       }
     }));
 
@@ -64,8 +60,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthStateLoading());
         // Log user out using our auth exception.
         await provider.logOut();
-        // Set state to "Logged Out".
-        emit(const AuthStateLoggedOut());
+        // Set state to "Logged Out" and pass it no exceptions.
+        emit(const AuthStateLoggedOut(null));
       } on Exception catch (e) {
         // Set state to "Log Out Failure".
         emit(AuthStateLogoutFailure(e));

@@ -5,6 +5,7 @@ import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/auth/bloc/auth_block.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
+import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
 
 class LoginView extends StatefulWidget {
@@ -73,15 +74,37 @@ class _LoginViewState extends State<LoginView> {
             decoration: const InputDecoration(hintText: "password"),
           ),
 
-          // Create a button.
-          TextButton(
-            // When the button is pressed ...
-            onPressed: () async {
-              // Get email from text controller.
-              final email = _email.text;
-              // Get password from text controller.
-              final password = _password.text;
-              try {
+          // Create a button which allows users to log in.
+          // Bloc Listener listens and responds to different states.
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) async {
+              // If state is "Logged Out"...
+              if (state is AuthStateLoggedOut) {
+                // If the exception in our "Logged Out" state is "UserNotFoundAuthException"...
+                if (state.exception is UserNotFoundAuthException) {
+                  // Display error dialog.
+                  await showErrorDialog(context, 'User not found.');
+                }
+                // Else if the exception in our "Logged Out" state is "WrongPasswordAuthException"...
+                else if (state.exception is WrongPasswordAuthException) {
+                  // Display error dialog.
+                  await showErrorDialog(context, 'Wrong credentials.');
+                }
+                // Else if the exception in our "Logged Out" state is "WrongPasswordAuthException"...
+                else if (state.exception is GenericAuthException) {
+                  // Display error dialog.
+                  await showErrorDialog(context, 'Something went wrong.');
+                }
+              }
+            },
+            child: TextButton(
+              // When the button is pressed ...
+              onPressed: () async {
+                // Get email from text controller.
+                final email = _email.text;
+                // Get password from text controller.
+                final password = _password.text;
+
                 // Get Get ahold of our "AuthBloc" and call AuthEventLogIn().
                 context.read<AuthBloc>().add(AuthEventLogIn(email, password));
 
@@ -109,16 +132,10 @@ class _LoginViewState extends State<LoginView> {
                 //     (route) => false,
                 //   );
                 // }
-              } on UserNotFoundAuthException {
-                await showErrorDialog(context, "User not found!");
-              } on WrongPasswordAuthException {
-                await showErrorDialog(context, "Wrong Password!");
-              } on GenericAuthException {
-                await showErrorDialog(context, "Authentication Error!");
-              }
-            },
-            // Write "Login" on button.
-            child: const Text("Login"),
+              },
+              // Write "Login" on button.
+              child: const Text("Login"),
+            ),
           ),
           // Button which redirects users to register page.
           TextButton(

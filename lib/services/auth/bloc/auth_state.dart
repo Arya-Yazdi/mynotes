@@ -21,12 +21,6 @@ class AuthStateLoggedIn extends AuthState {
   const AuthStateLoggedIn(this.user);
 }
 
-// State for when there has been an exception when user is trying to log in.
-class AuthStateLogInFailure extends AuthState {
-  final Exception exception;
-  const AuthStateLogInFailure(this.exception);
-}
-
 // State for when user needs to verify their email first.
 class AuthStateNeedsVerification extends AuthState {
   const AuthStateNeedsVerification();
@@ -34,7 +28,8 @@ class AuthStateNeedsVerification extends AuthState {
 
 // State for when user is logged out.
 class AuthStateLoggedOut extends AuthState {
-  const AuthStateLoggedOut();
+  final Exception? exception;
+  const AuthStateLoggedOut(this.exception);
 }
 
 // State for when there has been an exception when user is trying to log in.
