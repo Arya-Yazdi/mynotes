@@ -1,5 +1,2 @@
-const loginRoute = '/login/';
-const registerRoute = '/register/';
-const notesRoute = '/notes/';
-const verifyEmailRoute = '/verify-email/';
+// CreateUpdateNoteView() shown when users click the "+" icon from notes_view to create and type their new note.
 const createOrUpdateNewNoteRoute = '/notes/new-note/';

@@ -21,6 +21,25 @@ class AuthEventLogIn extends AuthEvent {
   const AuthEventLogIn(this.email, this.password);
 }
 
+// Event for when user is logged in but needs to verify their email first.
+class AuthEventSendEmailVerification extends AuthEvent {
+  const AuthEventSendEmailVerification();
+}
+
+// Event for when user wants to register.
+class AuthEventRegister extends AuthEvent {
+  // For user's email.
+  final String email;
+  // For user's password.
+  final String password;
+  const AuthEventRegister(this.email, this.password);
+}
+
+// Event for when user is in loggin page but wants to register.
+class AuthEventShouldRegister extends AuthEvent {
+  const AuthEventShouldRegister();
+}
+
 // Event for when user wants to log out.
 class AuthEventLogOut extends AuthEvent {
   const AuthEventLogOut();
