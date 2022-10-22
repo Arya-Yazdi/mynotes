@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/constants/routes.dart';
+import 'package:mynotes/helpers/loading/loading_screen.dart';
 import 'package:mynotes/services/auth/bloc/auth_block.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
@@ -42,7 +43,20 @@ class HomePage extends StatelessWidget {
     // call AuthEventInitialize().
     context.read<AuthBloc>().add(const AuthEventInitialize());
 
-    return BlocBuilder<AuthBloc, AuthState>(
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // If state's "isLoading" parameter is true...
+        if (state.isLoading) {
+          // Show an overlay.
+          LoadingScreen().show(
+            context: context,
+            text: state.loadingText ?? 'Please wait a moment...',
+          );
+        } else {
+          // Hide the overlay.
+          LoadingScreen().hide();
+        }
+      },
       builder: (context, state) {
         // If user is fully logged in...
         if (state is AuthStateLoggedIn) {

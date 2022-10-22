@@ -7,45 +7,70 @@ import 'package:equatable/equatable.dart';
 // Create a generic "AuthState" class. (aka Super class which will contain all states)
 @immutable
 abstract class AuthState {
-  const AuthState();
+  final bool isLoading;
+  final String? loadingText;
+  const AuthState({
+    required this.isLoading,
+    this.loadingText = 'Please wait a moment...',
+  });
 }
 
 // State for when firebase/application has not yet been initialized (so we can display loading screen etc.).
 class AuthStateUninitialized extends AuthState {
-  const AuthStateUninitialized();
+  // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
+  // which is expected to be provided when the function is called.
+  const AuthStateUninitialized({required bool isLoading})
+      : super(isLoading: isLoading);
 }
 
 // State for when we are registering a user.
 class AuthStateRegistering extends AuthState {
   final Exception exception;
-  const AuthStateRegistering(this.exception);
+  // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
+  // which is expected to be provided when the function is called.
+  const AuthStateRegistering({
+    required bool isLoading,
+    required this.exception,
+  }) : super(isLoading: isLoading);
 }
 
 // State for when user is logged in.
 class AuthStateLoggedIn extends AuthState {
   // Declare a variable named "user" which is of type AuthUser.
   final AuthUser user;
-  const AuthStateLoggedIn(this.user);
+  // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
+  // which is expected to be provided when the function is called.
+  const AuthStateLoggedIn({required this.user, required bool isLoading})
+      : super(isLoading: isLoading);
 }
 
 // State for when user needs to verify their email first.
 class AuthStateNeedsVerification extends AuthState {
-  const AuthStateNeedsVerification();
+  // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
+  // which is expected to be provided when the function is called.
+  const AuthStateNeedsVerification({required bool isLoading})
+      : super(isLoading: isLoading);
 }
 
 // State for when user is logged out.
 // "with EquatableMixin" : A mixin that helps implement equality without needing to explicitly override [operator ==] and [hashCode].
+// If we don't do this, when we compare "AuthStateLoggedOut" with another "AuthStateLoggedOut",
+//it will always return true as their are the same class.
 class AuthStateLoggedOut extends AuthState with EquatableMixin {
   // Exception arising when user is logged out.
   final Exception? exception;
-  // While waiting for user to be registered/logged in.
-  final bool isLoading;
+  // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
+  // which is expected to be provided when the function is called.
   const AuthStateLoggedOut({
     required this.exception,
-    required this.isLoading,
-  });
+    required bool isLoading,
+    String? loadingtext,
+  }) : super(
+          isLoading: isLoading,
+          loadingText: loadingtext,
+        );
 
-  // Need below come because of "with EquatableMixin".
+  // NOTE: Need below code because of "with EquatableMixin".
   @override
   // Take these two properties (exception & isLoading) into acount when computing equality "==" in
   // the instances of "AuthStateLoggedOut".

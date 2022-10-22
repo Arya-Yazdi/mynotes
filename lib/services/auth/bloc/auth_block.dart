@@ -11,7 +11,8 @@ import 'package:mynotes/services/auth/bloc/auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   // Constructor which takes in a Authentication Provider (eg. Firebase)
   // Initial state of Bloc is set to "Uninitialize (AuthStateUninitialized)"
-  AuthBloc(AuthProvider provider) : super(const AuthStateUninitialized()) {
+  AuthBloc(AuthProvider provider)
+      : super(const AuthStateUninitialized(isLoading: true)) {
     //
     // INITIALIZE EVENT: When we are initializing our Auth Provider (eg. firebase).
     on<AuthEventInitialize>(((event, emit) async {
@@ -27,12 +28,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       // If user is logged in but has not verified their email...
       else if (!user.isEmailVerified) {
         // Set state to "Needs Verification".
-        emit(const AuthStateNeedsVerification());
+        emit(const AuthStateNeedsVerification(isLoading: false));
       }
       // If user is logged in and their email is verified...
       else {
         // Set state to "Logged In".
-        emit(AuthStateLoggedIn(user));
+        emit(AuthStateLoggedIn(user: user, isLoading: false));
       }
     }));
 
@@ -52,10 +53,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await provider.sendEmailVerification();
 
           // Set state to "AuthStateNeedsVerification".
-          emit(const AuthStateNeedsVerification());
+          emit(const AuthStateNeedsVerification(isLoading: false));
         } on Exception catch (e) {
           // If exception occurs set state to "AuthStateRegistering" and pass state the exception
-          emit(AuthStateRegistering(e));
+          emit(AuthStateRegistering(exception: e, isLoading: false));
         }
       },
     );
@@ -64,7 +65,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // LOG IN EVENT: When the user wants to log in.
     on<AuthEventLogIn>(((event, emit) async {
       // Set state to "AuthStateLoggedOut" and display loading dialog.
-      emit(const AuthStateLoggedOut(exception: null, isLoading: true));
+      emit(const AuthStateLoggedOut(
+        exception: null,
+        isLoading: true,
+        loadingtext: 'Logging in...',
+      ));
       // Delete
       await Future.delayed(const Duration(seconds: 3));
       // Get user's email.
@@ -82,12 +87,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           // Dismiss the loading dialog.
           emit(const AuthStateLoggedOut(exception: null, isLoading: false));
           // Set state as "AuthStateNeedsVerification" which sends user to Verify Email View.
-          emit(const AuthStateNeedsVerification());
+          emit(const AuthStateNeedsVerification(isLoading: false));
         } else {
           // Dismiss the loading dialog.
           emit(const AuthStateLoggedOut(exception: null, isLoading: false));
           // Set state to "Logged In".
-          emit(AuthStateLoggedIn(user));
+          emit(AuthStateLoggedIn(user: user, isLoading: false));
         }
       } on Exception catch (e) {
         // Set state to "Log Out" and pass in the exception.
@@ -97,14 +102,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     //
     // SEND EMAIL VERIFICATION EVENT: When user needs to verify their email.
-    on<AuthEventSendEmailVerification>(
-      (event, emit) async {
-        // Send email verificaton to the user.
-        await provider.sendEmailVerification();
-        // Set state to "AuthStateNeedsVerification" (we are not changing state.)
-        emit(const AuthStateNeedsVerification());
-      },
-    );
+    on<AuthEventSendEmailVerification>((event, emit) async {
+      // Send email verificaton to the user.
+      await provider.sendEmailVerification();
+      // We are not changing state.
+      emit(state);
+    });
 
     //
     // LOG OUT EVENT: When the user wants to log out.

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
@@ -6,7 +5,6 @@ import 'package:mynotes/services/auth/bloc/auth_block.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
-import 'package:mynotes/utilities/dialog/loading_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -20,11 +18,6 @@ class _LoginViewState extends State<LoginView> {
   late final TextEditingController _email;
   // Create text controller to store user's inputted password.
   late final TextEditingController _password;
-
-  // Define optional variale named "_closeDialogHandle" of type CloseDialog. CloseDialog is a function returned
-  // by showLoadingDialog() from loading_dialog.dart and upon calling it, loading dialog will be dismissed.
-  // If _closeDialogHandle != null, loading dialog has not been dismissed.
-  CloseDialog? _closeDialogHandle;
 
   // initState() is always called once at the very beginning.
   @override
@@ -53,24 +46,6 @@ class _LoginViewState extends State<LoginView> {
       listener: (context, state) async {
         // If state is "Logged Out"...
         if (state is AuthStateLoggedOut) {
-          final closeDialog = _closeDialogHandle;
-          // If we are not actively loading anything / we have finished loading
-          // but have not closed the loading dialog / loading dialog is still there...
-          if (!state.isLoading && closeDialog != null) {
-            // Call closeDialog() function to dismiss laoding dialog.
-            closeDialog();
-            // Set "_closeDialogHandle" to null as loading screen has been dismissed.
-            _closeDialogHandle = null;
-          }
-          // If we are loading but loading dialog is not present...
-          else if (state.isLoading && closeDialog == null) {
-            // Display loading dialog.
-            _closeDialogHandle = showLoadingDialog(
-              context: context,
-              text: 'Loading...',
-            );
-          }
-
           // If the exception in our "Logged Out" state is "UserNotFoundAuthException"...
           if (state.exception is UserNotFoundAuthException) {
             // Display error dialog.
