@@ -25,7 +25,7 @@ class AuthStateUninitialized extends AuthState {
 
 // State for when we are registering a user.
 class AuthStateRegistering extends AuthState {
-  final Exception exception;
+  final Exception? exception;
   // Construtor. Set the isLoading parameter (which is inherited from the super class) to the "isLoading" bool
   // which is expected to be provided when the function is called.
   const AuthStateRegistering({
@@ -50,6 +50,20 @@ class AuthStateNeedsVerification extends AuthState {
   // which is expected to be provided when the function is called.
   const AuthStateNeedsVerification({required bool isLoading})
       : super(isLoading: isLoading);
+}
+
+// State for when user forgot their password and needs to resest it.
+class AuthStateForgotPassword extends AuthState {
+  // For when exception might be thrown during sending password reset email.
+  final Exception? exception;
+  // To indicate whether password reset email was sent or not.
+  final bool hasSentEmail;
+
+  const AuthStateForgotPassword({
+    required this.exception,
+    required this.hasSentEmail,
+    required bool isLoading,
+  }) : super(isLoading: isLoading);
 }
 
 // State for when user is logged out.

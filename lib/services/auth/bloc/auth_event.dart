@@ -9,6 +9,7 @@ abstract class AuthEvent {
 
 // Event for when we are initializing firebase.
 class AuthEventInitialize extends AuthEvent {
+  // Constructor.
   const AuthEventInitialize();
 }
 
@@ -43,4 +44,11 @@ class AuthEventShouldRegister extends AuthEvent {
 // Event for when user wants to log out.
 class AuthEventLogOut extends AuthEvent {
   const AuthEventLogOut();
+}
+
+// Event for when user forgot their password and want to reset it.
+class AuthEventForgotPassword extends AuthEvent {
+  // Email of user who forget their email.
+  final String? email;
+  const AuthEventForgotPassword({required this.email});
 }

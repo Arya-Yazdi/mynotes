@@ -60,9 +60,7 @@ class _NotesViewState extends State<NotesView> {
                     // If shouldLogOut is true...
                     if (shouldLogOut) {
                       // Log user out.
-                      context.read<AuthBloc>().add(
-                            const AuthEventLogOut(),
-                          );
+                      context.read<AuthBloc>().add(const AuthEventLogOut());
                     }
                 }
               },

@@ -62,6 +62,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     //
+    // SHOULD REGISTER EVENT: For when user wants to to to the register page.
+    on<AuthEventShouldRegister>(
+      (event, emit) {
+        emit(const AuthStateRegistering(isLoading: false, exception: null));
+      },
+    );
+
+    //
     // LOG IN EVENT: When the user wants to log in.
     on<AuthEventLogIn>(((event, emit) async {
       // Set state to "AuthStateLoggedOut" and display loading dialog.
@@ -70,8 +78,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         isLoading: true,
         loadingtext: 'Logging in...',
       ));
-      // Delete
-      await Future.delayed(const Duration(seconds: 3));
       // Get user's email.
       final email = event.email;
       // Get user's password.
@@ -110,6 +116,58 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     //
+    // FORGOT PASSWORD EVENT: When user wants to reset their password.
+    on<AuthEventForgotPassword>(
+      (event, emit) async {
+        emit(const AuthStateForgotPassword(
+          exception: null,
+          hasSentEmail: false,
+          isLoading: false,
+        ));
+
+        // Get user's email
+        final email = event.email;
+
+        // If ser just got to forgot-password screen.
+        if (email == null) {
+          // Don't do anything.
+          return;
+        }
+
+        // Else if user actually wants to reset their password and have provided a valid email...
+        // Show Loading page.
+        emit(const AuthStateForgotPassword(
+          exception: null,
+          hasSentEmail: false,
+          isLoading: true,
+        ));
+
+        // For when exception might be thrown during sending password reset email.
+        Exception? exception;
+        // To indicate whether password reset email was sent or not.
+        bool hasSentEmail;
+
+        // Try to send user password reset email.
+        try {
+          // Send password reset email to user's email.
+          await provider.sendPasswordReset(toEmail: email);
+          hasSentEmail = true;
+          exception = null;
+        } on Exception catch (e) {
+          hasSentEmail = false;
+          exception = e;
+        }
+
+        // Dismiss loading page.
+        emit(AuthStateForgotPassword(
+          exception: exception,
+          hasSentEmail: hasSentEmail,
+          isLoading: false,
+        ));
+      },
+    );
+
+    //
     // LOG OUT EVENT: When the user wants to log out.
     on<AuthEventLogOut>(((event, emit) async {
       try {
@@ -123,7 +181,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthStateLoggedOut(exception: null, isLoading: false));
         // }
       } on Exception catch (e) {
-        // Set state to "Logged Out".
+        // Set state to "Logged Out" and show exception.
         emit(AuthStateLoggedOut(exception: e, isLoading: false));
       }
     }));

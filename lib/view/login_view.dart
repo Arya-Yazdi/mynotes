@@ -49,7 +49,8 @@ class _LoginViewState extends State<LoginView> {
           // If the exception in our "Logged Out" state is "UserNotFoundAuthException"...
           if (state.exception is UserNotFoundAuthException) {
             // Display error dialog.
-            await showErrorDialog(context, 'User not found.');
+            await showErrorDialog(
+                context, 'Cannot find a user with the entered credentials.');
           }
           // Else if the exception in our "Logged Out" state is "WrongPasswordAuthException"...
           else if (state.exception is WrongPasswordAuthException) {
@@ -67,63 +68,77 @@ class _LoginViewState extends State<LoginView> {
         appBar: AppBar(
           title: const Text("Login"),
         ),
-        body: Column(
-          children: [
-            // TextField: email.
-            // Create input field for user to enter their email.
-            TextField(
-              // Send user's input to the text controller.
-              controller: _email,
-              // Use "email" keyboard when user taps on input.
-              keyboardType: TextInputType.emailAddress,
-              // Don't autocorect email input.
-              autocorrect: false,
-              // Use "email" as placeholder text.
-              decoration: const InputDecoration(hintText: "email"),
-            ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // TEXT
+              const Text('Please log into your account to access your notes.'),
 
-            // TextField: password.
-            // Create input field for user to enter their password.
-            TextField(
-              // Send user's input to the text controller.
-              controller: _password,
-              // Hide password when typed.
-              obscureText: true,
-              // Don't suggest or autocorect password input.
-              enableSuggestions: false,
-              autocorrect: false,
-              // Use "password" as placeholder text.
-              decoration: const InputDecoration(hintText: "password"),
-            ),
+              // TEXTFIELD: email.
+              // Create input field for user to enter their email.
+              TextField(
+                // Send user's input to the text controller.
+                controller: _email,
+                // Use "email" keyboard when user taps on input.
+                keyboardType: TextInputType.emailAddress,
+                // Don't autocorect email input.
+                autocorrect: false,
+                // Use "email" as placeholder text.
+                decoration: const InputDecoration(hintText: "email"),
+              ),
 
-            // TextButton: Login
-            // Create a button which allows users to log in.
-            TextButton(
-              // When the button is pressed ...
-              onPressed: () async {
-                // Get email from text controller.
-                final email = _email.text;
-                // Get password from text controller.
-                final password = _password.text;
+              // TextField: password.
+              // Create input field for user to enter their password.
+              TextField(
+                // Send user's input to the text controller.
+                controller: _password,
+                // Hide password when typed.
+                obscureText: true,
+                // Don't suggest or autocorect password input.
+                enableSuggestions: false,
+                autocorrect: false,
+                // Use "password" as placeholder text.
+                decoration: const InputDecoration(hintText: "password"),
+              ),
 
-                // Get Get ahold of our "AuthBloc" and call AuthEventLogIn().
-                context.read<AuthBloc>().add(AuthEventLogIn(email, password));
-              },
-              // Write "Login" on button.
-              child: const Text("Login"),
-            ),
+              // TEXTBUTTON: Login
+              // Create a button which allows users to log in.
+              TextButton(
+                // When the button is pressed ...
+                onPressed: () async {
+                  // Get email from text controller.
+                  final email = _email.text;
+                  // Get password from text controller.
+                  final password = _password.text;
 
-            // TextButton: Go to register page.
-            // Button which redirects users to register page.
-            TextButton(
-              onPressed: () {
-                // Get Get ahold of our "AuthBloc" and call AuthEventShouldRegister().
-                // Direct user to "register" page.
-                context.read<AuthBloc>().add(const AuthEventShouldRegister());
-              },
-              child: const Text("Not Registered Yet? Register Now"),
-            )
-          ],
+                  // Get Get ahold of our "AuthBloc" and call AuthEventLogIn().
+                  context.read<AuthBloc>().add(AuthEventLogIn(email, password));
+                },
+                // Write "Login" on button.
+                child: const Text("Login"),
+              ),
+
+              TextButton(
+                  onPressed: () {
+                    context
+                        .read<AuthBloc>()
+                        .add(const AuthEventForgotPassword(email: null));
+                  },
+                  child: const Text('Forgot password?')),
+
+              // TEXTBUTTON: Go to register page.
+              // Button which redirects users to register page.
+              TextButton(
+                onPressed: () {
+                  // Get Get ahold of our "AuthBloc" and call AuthEventShouldRegister().
+                  // Direct user to "register" page.
+                  context.read<AuthBloc>().add(const AuthEventShouldRegister());
+                },
+                child: const Text("Not Registered Yet? Register Now"),
+              )
+            ],
+          ),
         ),
       ),
     );

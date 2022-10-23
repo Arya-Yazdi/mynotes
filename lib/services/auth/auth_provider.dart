@@ -25,6 +25,9 @@ abstract class AuthProvider {
     required String password,
   });
 
+  // Function which sends user an email so they can reset their password if forgotten.
+  Future<void> sendPasswordReset({required String toEmail});
+
   // Function which logs user out.
   Future<void> logOut();
 

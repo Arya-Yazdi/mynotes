@@ -1,4 +1,4 @@
-//// (4) Allocates each functionality of the AuthProvider based on the Provider.
+//// (4) Allocates/delegates each functionality of the AuthProvider based on the Provider.
 /// Eg. If AuthProvider is Apple, is relays it to apple_auth_provider to handle
 /// the of authentication. AuthService (in this case) does the exact same job as
 /// the "AuthProvider". However later itcan have other services and more logic if needed.
@@ -42,4 +42,8 @@ class AuthService implements AuthProvider {
   @override
   // Delegate initialize() function to the provider.
   Future<void> initialize() => provider.initialize();
+
+  @override
+  Future<void> sendPasswordReset({required String toEmail}) =>
+      provider.sendPasswordReset(toEmail: toEmail);
 }
