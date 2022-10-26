@@ -29,27 +29,28 @@ class FirebaseCloudStorage {
     );
   }
 
-  // Function which gets user's note from Firestore given the user's id.
-  Future<Iterable<CloudNote>> getNotes({required String ownerUserId}) async {
-    try {
-      // From notes 'Stream'
-      return await notes
-          // Filter the collection to only have documents where "ownerUserIdFieldName" is equal to "ownerUserId".
-          .where(
-            ownerUserIdFieldName,
-            isEqualTo: ownerUserId,
-          )
-          // Get those documents which pass the "where" filter.
-          .get()
-          // Then map each document(each note) to a "CloudNote" and fill in appropriate fields
-          // with content taken from the doc(the note).
-          .then(
-            (value) => value.docs.map((doc) => CloudNote.fromSnapShot(doc)),
-          );
-    } catch (e) {
-      throw CouldNotGetAllNotesException();
-    }
-  }
+  // REASON FOR COMMENTING OUT: NOT BEING USED IN APPLICATION.
+  // // Function which gets user's note from Firestore given the user's id.
+  // Future<Iterable<CloudNote>> getNotes({required String ownerUserId}) async {
+  //   try {
+  //     // From notes 'Stream'
+  //     return await notes
+  //         // Filter the collection to only have documents where "ownerUserIdFieldName" is equal to "ownerUserId".
+  //         .where(
+  //           ownerUserIdFieldName,
+  //           isEqualTo: ownerUserId,
+  //         )
+  //         // Get those documents which pass the "where" filter.
+  //         .get()
+  //         // Then map each document(each note) to a "CloudNote" and fill in appropriate fields
+  //         // with content taken from the doc(the note).
+  //         .then(
+  //           (value) => value.docs.map((doc) => CloudNote.fromSnapShot(doc)),
+  //         );
+  //   } catch (e) {
+  //     throw CouldNotGetAllNotesException();
+  //   }
+  // }
 
   // Function which deletes user's notes.
   Future<void> deleteNote({required String documentId}) async {
@@ -75,13 +76,17 @@ class FirebaseCloudStorage {
   }
 
   // Stream which allows us to get user's notes live (Is aware of changes eg. user adds/deleted a note)
-  Stream<Iterable<CloudNote>> allNotes({required String ownerUserId}) =>
-      // "notes.snapshots()": Get all changes as they are happening live.
-      // "map((event) => event.docs": Get the documents(notes) inside that snapshot (event/list of notes).
-      notes.snapshots().map((event) => event.docs
-          // Map those documents(notes) and make each a CloudNote(so we have access to each note).
-          .map((doc) => CloudNote.fromSnapShot(doc))
-          .where((note) => note.ownerUserId == ownerUserId));
+  Stream<Iterable<CloudNote>> allNotes({required String ownerUserId}) {
+    final allNotes = notes
+        .where(ownerUserIdFieldName, isEqualTo: ownerUserId)
+        // "snapshots()": Get all changes as they are happening live.
+        .snapshots()
+        // "map((event) => event.docs": Get the documents(notes) inside that snapshot (event/list of notes).
+        .map((event) => event.docs
+            // Map those documents(notes) and make each a CloudNote(so we have access to each note).
+            .map((doc) => CloudNote.fromSnapShot(doc)));
+    return allNotes;
+  }
 
   // Make "FirebaseCloudStorage" a singleton so that only one instance of it can be created in the entire
   // application. In this case the single instance is going to be called "_shared".  The factory allows us to

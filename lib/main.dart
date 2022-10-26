@@ -13,13 +13,29 @@ import 'package:mynotes/view/notes/notes_view.dart';
 import 'package:mynotes/view/register_view.dart';
 import 'package:mynotes/view/verify_email_view.dart';
 
+// Custon color declaration.
+MaterialColor myColor = MaterialColor(0xFF800024, color);
+Map<int, Color> color = {
+  50: const Color.fromRGBO(128, 0, 36, .1),
+  100: const Color.fromRGBO(128, 0, 36, .2),
+  200: const Color.fromRGBO(128, 0, 36, .3),
+  300: const Color.fromRGBO(128, 0, 36, .4),
+  400: const Color.fromRGBO(128, 0, 36, .5),
+  500: const Color.fromRGBO(128, 0, 36, .6),
+  600: const Color.fromRGBO(128, 0, 36, .7),
+  700: const Color.fromRGBO(128, 0, 36, .8),
+  800: const Color.fromRGBO(128, 0, 36, .9),
+  900: const Color.fromRGBO(128, 0, 36, 1),
+};
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: myColor,
       ),
       // Create a Bloc Provider which takes in our "AuthBloc" Bloc.
       home: BlocProvider<AuthBloc>(
