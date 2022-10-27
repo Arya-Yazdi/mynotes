@@ -5,6 +5,7 @@ import 'package:mynotes/services/auth/bloc/auth_block.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -50,30 +51,36 @@ class _LoginViewState extends State<LoginView> {
           if (state.exception is UserNotFoundAuthException) {
             // Display error dialog.
             await showErrorDialog(
-                context, 'Cannot find a user with the entered credentials.');
+                context, context.loc.login_error_cannot_find_user);
           }
           // Else if the exception in our "Logged Out" state is "WrongPasswordAuthException"...
           else if (state.exception is WrongPasswordAuthException) {
             // Display error dialog.
-            await showErrorDialog(context, 'Wrong credentials.');
+            await showErrorDialog(
+              context,
+              context.loc.login_error_wrong_credentials,
+            );
           }
           // Else if the exception in our "Logged Out" state is "WrongPasswordAuthException"...
           else if (state.exception is GenericAuthException) {
             // Display error dialog.
-            await showErrorDialog(context, 'Something went wrong.');
+            await showErrorDialog(
+              context,
+              context.loc.login_error_auth_error,
+            );
           }
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Login"),
+          title: Text(context.loc.login),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               // TEXT
-              const Text('Please log into your account to access your notes.'),
+              Text(context.loc.login_view_prompt),
 
               // TEXTFIELD: email.
               // Create input field for user to enter their email.
@@ -85,7 +92,8 @@ class _LoginViewState extends State<LoginView> {
                 // Don't autocorect email input.
                 autocorrect: false,
                 // Use "email" as placeholder text.
-                decoration: const InputDecoration(hintText: "email"),
+                decoration: InputDecoration(
+                    hintText: context.loc.email_text_field_placeholder),
               ),
 
               // TextField: password.
@@ -99,7 +107,8 @@ class _LoginViewState extends State<LoginView> {
                 enableSuggestions: false,
                 autocorrect: false,
                 // Use "password" as placeholder text.
-                decoration: const InputDecoration(hintText: "password"),
+                decoration: InputDecoration(
+                    hintText: context.loc.password_text_field_placeholder),
               ),
 
               // TEXTBUTTON: Login
@@ -116,7 +125,7 @@ class _LoginViewState extends State<LoginView> {
                   context.read<AuthBloc>().add(AuthEventLogIn(email, password));
                 },
                 // Write "Login" on button.
-                child: const Text("Login"),
+                child: Text(context.loc.login),
               ),
 
               TextButton(
@@ -125,7 +134,7 @@ class _LoginViewState extends State<LoginView> {
                         .read<AuthBloc>()
                         .add(const AuthEventForgotPassword(email: null));
                   },
-                  child: const Text('Forgot password?')),
+                  child: Text(context.loc.login_view_forgot_password)),
 
               // TEXTBUTTON: Go to register page.
               // Button which redirects users to register page.
@@ -135,7 +144,7 @@ class _LoginViewState extends State<LoginView> {
                   // Direct user to "register" page.
                   context.read<AuthBloc>().add(const AuthEventShouldRegister());
                 },
-                child: const Text("Not Registered Yet? Register Now"),
+                child: Text(context.loc.login_view_not_registered_yet),
               )
             ],
           ),

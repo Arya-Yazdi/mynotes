@@ -5,6 +5,7 @@ import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
 import 'package:mynotes/utilities/dialog/password_reset_email_sent_dialog.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
 
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
@@ -43,21 +44,23 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
           // If an exception was thrown when sending an password reset email to user.
           if (state.exception != null) {
-            await showErrorDialog(context, 'OOPS! Something went wrong.');
+            await showErrorDialog(
+              context,
+              context.loc.forgot_password_view_generic_error,
+            );
           }
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Forgot Password'),
+          title: Text(context.loc.forgot_password),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               // TEXT: Description.
-              const Text(
-                  'Enter you email and we will send you an email so you can reset you password.'),
+              Text(context.loc.forgot_password_view_prompt),
 
               // TEXTFIELD: Enter email address.
               TextField(
@@ -65,8 +68,8 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 autocorrect: false,
                 autofocus: true,
                 controller: _controller,
-                decoration:
-                    const InputDecoration(hintText: 'Your email address...'),
+                decoration: InputDecoration(
+                    hintText: context.loc.email_text_field_placeholder),
               ),
 
               // TEXTBUTTON: Send reset password email.
@@ -77,7 +80,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                         .read<AuthBloc>()
                         .add(AuthEventForgotPassword(email: email));
                   },
-                  child: const Text('Reset Password')),
+                  child: Text(context.loc.forgot_password_view_send_me_link)),
 
               // TEXTBUTTON: Back to login view.
               TextButton(
@@ -85,7 +88,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                     // Send user to login view.
                     context.read<AuthBloc>().add(const AuthEventLogOut());
                   },
-                  child: const Text("Back to login page"))
+                  child: Text(context.loc.forgot_password_view_back_to_login))
             ],
           ),
         ),

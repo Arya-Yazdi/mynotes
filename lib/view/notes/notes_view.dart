@@ -10,6 +10,12 @@ import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
 import 'package:mynotes/utilities/dialog/logout_dialog.dart';
 import 'package:mynotes/enums/menu_action.dart';
 import 'package:mynotes/view/notes/notes_list_view.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
+
+// Extension to get the numebr of notes a user has.
+extension Count<T extends Iterable> on Stream<T> {
+  Stream<int> get getLength => map((event) => event.length);
+}
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -38,7 +44,19 @@ class _NotesViewState extends State<NotesView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Your Notes"),
+          title: StreamBuilder<int>(
+            // Get number of notes a user has.
+            stream: _noteService.allNotes(ownerUserId: userId).getLength,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final noteCount = snapshot.data ?? 0;
+                final text = context.loc.notes_title(noteCount);
+                return Text(text);
+              } else {
+                return const Text('');
+              }
+            },
+          ),
           // Display Something after "Title" in app bar.
           actions: [
             // Display a "+" plus icon. Allows user's to add new note.
@@ -68,14 +86,14 @@ class _NotesViewState extends State<NotesView> {
               // Called when PopupMenuButton (three dots) is clicked.
               // itemBuilder calls PopupMenuItem to get the items to show in the dropdown list.
               itemBuilder: (context) {
-                return const [
+                return [
                   // Add a new item to dropdown button.
                   PopupMenuItem<MenuAction>(
                     // Value of item is MenuAction (from the enum above) logout.
                     value: MenuAction.logout,
 
                     // text of the item should say "logout"
-                    child: Text("Log out"),
+                    child: Text(context.loc.logout_button),
                   ),
                 ];
               },

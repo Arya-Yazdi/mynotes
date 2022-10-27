@@ -7,6 +7,7 @@ import 'package:mynotes/utilities/generics/get_arguments.dart';
 import 'package:mynotes/services/cloud/cloud_note.dart';
 import 'package:mynotes/services/cloud/firebase_cloud_storage.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
 
 class CreateUpdateNoteView extends StatefulWidget {
   const CreateUpdateNoteView({super.key});
@@ -147,7 +148,7 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("New Note"),
+        title: Text(context.loc.note),
         actions: [
           // Allow user to share a note.
           IconButton(
@@ -181,8 +182,8 @@ class _CreateUpdateNoteViewState extends State<CreateUpdateNoteView> {
                 // (flutter TextField are only 1 line as default)
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
-                decoration:
-                    const InputDecoration(hintText: "What's on your mind?"),
+                decoration: InputDecoration(
+                    hintText: context.loc.start_typing_your_note),
               );
 
             default:

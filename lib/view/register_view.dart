@@ -5,6 +5,7 @@ import 'package:mynotes/services/auth/bloc/auth_block.dart';
 import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/utilities/dialog/error_dialog.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -46,25 +47,28 @@ class _RegisterViewState extends State<RegisterView> {
         if (state is AuthStateRegistering) {
           // If user's entered password is weak...
           if (state.exception is WeakPasswordAuthException) {
-            await showErrorDialog(context, 'Weak password');
+            await showErrorDialog(
+                context, context.loc.register_error_weak_password);
           }
           // If user's email is already in use...
           else if (state.exception is EmailAlreadyInUseAuthException) {
-            await showErrorDialog(context, 'Email is already in use');
+            await showErrorDialog(
+                context, context.loc.register_error_email_already_in_use);
           }
           // If user's email is already in use...
           else if (state.exception is InvalidEmailAuthException) {
-            await showErrorDialog(context, 'Invalid email.');
+            await showErrorDialog(
+                context, context.loc.register_error_invalid_email);
           }
           // If any other problem arises...
           else if (state.exception is GenericAuthException) {
-            await showErrorDialog(context, 'Failed to register.');
+            await showErrorDialog(context, context.loc.register_error_generic);
           }
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Register"),
+          title: Text(context.loc.register),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -72,8 +76,7 @@ class _RegisterViewState extends State<RegisterView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // TEXT:
-              const Text(
-                  'Register with your email and password so you can take notes!'),
+              Text(context.loc.register_view_prompt),
 
               // TEXTFIELD: Input email.
               TextField(
@@ -85,7 +88,8 @@ class _RegisterViewState extends State<RegisterView> {
                 autocorrect: false,
                 autofocus: true,
                 // Use "email" as placeholder text.
-                decoration: const InputDecoration(hintText: "email"),
+                decoration: InputDecoration(
+                    hintText: context.loc.email_text_field_placeholder),
               ),
 
               // TEXTFIELD: Input password.
@@ -98,7 +102,8 @@ class _RegisterViewState extends State<RegisterView> {
                 enableSuggestions: false,
                 autocorrect: false,
                 // Use "password" as placeholder text.
-                decoration: const InputDecoration(hintText: "password"),
+                decoration: InputDecoration(
+                    hintText: context.loc.password_text_field_placeholder),
               ),
 
               Center(
@@ -118,7 +123,7 @@ class _RegisterViewState extends State<RegisterView> {
                             .add(AuthEventRegister(email, password));
                       },
                       // Write "register" on button.
-                      child: const Text("Register"),
+                      child: Text(context.loc.register),
                     ),
 
                     // TEXTBUTTON: Go to login page.
@@ -128,7 +133,7 @@ class _RegisterViewState extends State<RegisterView> {
                           context.read<AuthBloc>().add(const AuthEventLogOut());
                         },
                         child:
-                            const Text("Already have an account? Login Here"))
+                            Text(context.loc.register_view_already_registered))
                   ],
                 ),
               ),

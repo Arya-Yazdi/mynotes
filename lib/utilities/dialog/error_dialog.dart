@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mynotes/utilities/dialog/generic_dialog.dart';
+import 'package:mynotes/extentions/buildcontext/loc.dart';
 
 Future<void> showErrorDialog(
   BuildContext context,
@@ -10,8 +11,8 @@ Future<void> showErrorDialog(
 ) {
   return showGenericDialog<void>(
     context: context,
-    title: 'An Error Occured!',
+    title: context.loc.generic_error_prompt,
     content: text,
-    optionsBuilder: () => {'OK': null},
+    optionsBuilder: () => {context.loc.ok: null},
   );
 }
